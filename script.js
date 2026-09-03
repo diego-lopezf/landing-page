@@ -1,0 +1,336 @@
+/* =================================================================
+   SCRIPT PRINCIPAL — JavaScript vanilla
+   Módulos:
+   1. Datos y renderizado de proyectos
+   2. Menú móvil
+   3. Navbar: sombra al hacer scroll + enlace activo
+   4. Animaciones de entrada (IntersectionObserver)
+   5. Validación del formulario de contacto
+   6. Utilidades (año del footer)
+   ================================================================= */
+
+(() => {
+  "use strict";
+
+  /* ===============================================================
+     1. PROYECTOS
+     Fuente de datos única. Para añadir un proyecto basta con
+     agregar un objeto a este array.
+     =============================================================== */
+  const PROJECTS = [
+    {
+      title: "Sincronizador CRM ↔ Hojas de cálculo",
+      category: "API Integration",
+      description:
+        "Mantiene sincronizados los contactos y estados de venta entre un CRM y Google Sheets en tiempo casi real, eliminando la copia manual de datos.",
+      tech: ["Python", "REST API", "Google Sheets API", "OAuth2"],
+      icon: "sync",
+      code: "https://github.com/diego-lopezf",
+      demo: "#",
+    },
+    {
+      title: "Bot de reportes automáticos",
+      category: "Bot",
+      description:
+        "Genera y envía informes diarios de métricas a un canal de equipo, con gráficos y alertas cuando un KPI sale de rango.",
+      tech: ["Python", "Telegram API", "Pandas", "Matplotlib"],
+      icon: "bot",
+      code: "https://github.com/diego-lopezf",
+      demo: "#",
+    },
+    {
+      title: "Extractor de precios de la competencia",
+      category: "Web Scraping",
+      description:
+        "Rastrea catálogos de varias tiendas, normaliza los datos y detecta variaciones de precio para tomar decisiones comerciales.",
+      tech: ["Python", "Playwright", "BeautifulSoup", "SQLite"],
+      icon: "scrape",
+      code: "https://github.com/diego-lopezf",
+      demo: "#",
+    },
+    {
+      title: "Pipeline de gestión de facturas",
+      category: "Python",
+      description:
+        "Lee facturas en PDF desde el correo, extrae los campos clave con OCR y los vuelca a un sistema contable de forma estructurada.",
+      tech: ["Python", "IMAP", "Tesseract OCR", "Regex"],
+      icon: "invoice",
+      code: "https://github.com/diego-lopezf",
+      demo: "#",
+    },
+    {
+      title: "Integrador de reservas multicanal",
+      category: "API Integration",
+      description:
+        "Unifica reservas procedentes de distintas plataformas en un único calendario y evita solapamientos (overbooking).",
+      tech: ["Python", "FastAPI", "Webhooks", "PostgreSQL"],
+      icon: "calendar",
+      code: "https://github.com/diego-lopezf",
+      demo: "#",
+    },
+    {
+      title: "Vigilante de despliegues",
+      category: "Bot",
+      description:
+        "Supervisa el estado de los servicios tras cada despliegue y realiza rollback automático si los health checks fallan.",
+      tech: ["Python", "Docker SDK", "Slack API", "Cron"],
+      icon: "shield",
+      code: "https://github.com/diego-lopezf",
+      demo: "#",
+    },
+  ];
+
+  /* Iconos SVG reutilizables para la zona de preview de cada tarjeta */
+  const ICONS = {
+    sync: '<path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />',
+    bot: '<path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />',
+    scrape: '<path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h10M4 18h6" />',
+    invoice: '<path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />',
+    calendar: '<path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />',
+    shield: '<path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />',
+  };
+
+  /**
+   * Crea el HTML de una tarjeta de proyecto.
+   * @param {object} p - datos del proyecto
+   * @returns {string} markup de la tarjeta
+   */
+  function renderProjectCard(p) {
+    const chips = p.tech.map((t) => `<span class="tech-chip">${t}</span>`).join("");
+    const iconPath = ICONS[p.icon] || ICONS.sync;
+
+    return `
+      <article class="project-card flex flex-col" data-animate>
+        <!-- Preview / captura visual -->
+        <div class="project-preview flex h-40 items-center justify-center border-b border-white/5">
+          <svg class="project-preview-icon h-14 w-14 text-white/80" fill="none" viewBox="0 0 24 24"
+               stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+            ${iconPath}
+          </svg>
+        </div>
+
+        <div class="flex flex-1 flex-col p-5">
+          <span class="badge mb-3 self-start">${p.category}</span>
+
+          <h3 class="text-base font-bold text-white">${p.title}</h3>
+          <p class="mt-2 flex-1 text-sm leading-relaxed text-slate-400">${p.description}</p>
+
+          <!-- Tecnologías -->
+          <div class="mt-4 flex flex-wrap gap-1.5">${chips}</div>
+
+          <!-- Acciones -->
+          <div class="mt-5 flex gap-3">
+            <a href="${p.code}" target="_blank" rel="noopener noreferrer"
+               class="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-slate-200 transition-colors hover:border-white/25 hover:bg-white/10">
+              <svg class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 .5C5.37.5 0 5.78 0 12.29c0 5.2 3.44 9.6 8.2 11.16.6.11.82-.25.82-.56v-2c-3.34.71-4.04-1.58-4.04-1.58-.55-1.36-1.33-1.73-1.33-1.73-1.09-.73.08-.72.08-.72 1.2.08 1.83 1.21 1.83 1.21 1.07 1.8 2.8 1.28 3.49.98.11-.76.42-1.28.76-1.58-2.67-.3-5.47-1.31-5.47-5.83 0-1.29.47-2.34 1.24-3.17-.13-.3-.54-1.52.11-3.18 0 0 1.01-.32 3.3 1.21a11.6 11.6 0 016 0c2.29-1.53 3.3-1.21 3.3-1.21.65 1.66.24 2.88.12 3.18.77.83 1.23 1.88 1.23 3.17 0 4.53-2.8 5.53-5.48 5.82.43.36.81 1.09.81 2.2v3.26c0 .31.22.68.83.56A12.03 12.03 0 0024 12.29C24 5.78 18.63.5 12 .5z" />
+              </svg>
+              Ver Código
+            </a>
+            <a href="${p.demo}"
+               class="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-accent to-accent-2 px-3 py-1.5 text-xs font-semibold text-white transition-transform hover:-translate-y-0.5">
+              Demo / Detalles
+              <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </a>
+          </div>
+        </div>
+      </article>`;
+  }
+
+  /** Inserta todas las tarjetas en la cuadrícula. */
+  function mountProjects() {
+    const grid = document.getElementById("projects-grid");
+    if (!grid) return;
+    grid.innerHTML = PROJECTS.map(renderProjectCard).join("");
+  }
+
+  /* ===============================================================
+     2. MENÚ MÓVIL
+     =============================================================== */
+  function initMobileMenu() {
+    const toggle = document.getElementById("menu-toggle");
+    const menu = document.getElementById("mobile-menu");
+    const iconOpen = document.getElementById("icon-open");
+    const iconClose = document.getElementById("icon-close");
+    if (!toggle || !menu) return;
+
+    const setOpen = (open) => {
+      menu.classList.toggle("hidden", !open);
+      iconOpen.classList.toggle("hidden", open);
+      iconClose.classList.toggle("hidden", !open);
+      toggle.setAttribute("aria-expanded", String(open));
+    };
+
+    toggle.addEventListener("click", () => {
+      const isOpen = toggle.getAttribute("aria-expanded") === "true";
+      setOpen(!isOpen);
+    });
+
+    // Cierra el menú al pulsar cualquier enlace
+    menu.querySelectorAll("a").forEach((link) => {
+      link.addEventListener("click", () => setOpen(false));
+    });
+  }
+
+  /* ===============================================================
+     3. NAVBAR — sombra al hacer scroll + enlace activo por sección
+     =============================================================== */
+  function initNavbarBehavior() {
+    const navbar = document.getElementById("navbar");
+    if (navbar) {
+      const onScroll = () => {
+        navbar.classList.toggle("shadow-lg", window.scrollY > 8);
+        navbar.classList.toggle("shadow-black/30", window.scrollY > 8);
+      };
+      onScroll();
+      window.addEventListener("scroll", onScroll, { passive: true });
+    }
+
+    // Resaltado del enlace de la sección visible
+    const sections = document.querySelectorAll("main section[id]");
+    const navLinks = document.querySelectorAll(".nav-link");
+    if (!sections.length || !navLinks.length) return;
+
+    const spy = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          const id = entry.target.id;
+          navLinks.forEach((link) => {
+            link.classList.toggle("active", link.getAttribute("href") === `#${id}`);
+          });
+        });
+      },
+      { rootMargin: "-45% 0px -50% 0px" }
+    );
+    sections.forEach((s) => spy.observe(s));
+  }
+
+  /* ===============================================================
+     4. ANIMACIONES DE ENTRADA (fadeIn al hacer scroll)
+     =============================================================== */
+  function initScrollAnimations() {
+    const items = document.querySelectorAll("[data-animate]");
+    if (!items.length) return;
+
+    // Sin soporte de IntersectionObserver: mostrar todo directamente
+    if (!("IntersectionObserver" in window)) {
+      items.forEach((el) => el.classList.add("is-visible"));
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries, obs) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add("is-visible");
+          obs.unobserve(entry.target); // anima una sola vez
+        });
+      },
+      { threshold: 0.12 }
+    );
+    items.forEach((el) => observer.observe(el));
+  }
+
+  /* ===============================================================
+     5. VALIDACIÓN DEL FORMULARIO DE CONTACTO
+     =============================================================== */
+  function initContactForm() {
+    const form = document.getElementById("contact-form");
+    if (!form) return;
+
+    const success = document.getElementById("form-success");
+    const fields = {
+      name: form.querySelector("#name"),
+      email: form.querySelector("#email"),
+      message: form.querySelector("#message"),
+    };
+
+    const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    /** Devuelve el mensaje de error de un campo, o "" si es válido. */
+    const validateField = (key) => {
+      const value = fields[key].value.trim();
+      switch (key) {
+        case "name":
+          if (!value) return "Indica tu nombre.";
+          if (value.length < 2) return "El nombre es demasiado corto.";
+          return "";
+        case "email":
+          if (!value) return "Necesito un email para responderte.";
+          if (!EMAIL_RE.test(value)) return "Ese email no parece válido.";
+          return "";
+        case "message":
+          if (!value) return "Escribe un mensaje.";
+          if (value.length < 10) return "Cuéntame un poco más (mín. 10 caracteres).";
+          return "";
+        default:
+          return "";
+      }
+    };
+
+    /** Pinta o limpia el estado de error de un campo. */
+    const showError = (key, msg) => {
+      const input = fields[key];
+      const errorEl = form.querySelector(`[data-error-for="${key}"]`);
+      input.classList.toggle("is-invalid", Boolean(msg));
+      input.setAttribute("aria-invalid", String(Boolean(msg)));
+      if (errorEl) errorEl.textContent = msg;
+    };
+
+    // Validación en vivo una vez que el campo pierde el foco
+    Object.keys(fields).forEach((key) => {
+      fields[key].addEventListener("blur", () => showError(key, validateField(key)));
+      fields[key].addEventListener("input", () => {
+        if (fields[key].classList.contains("is-invalid")) {
+          showError(key, validateField(key));
+        }
+      });
+    });
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      success.classList.add("hidden");
+
+      let firstInvalid = null;
+      Object.keys(fields).forEach((key) => {
+        const msg = validateField(key);
+        showError(key, msg);
+        if (msg && !firstInvalid) firstInvalid = fields[key];
+      });
+
+      if (firstInvalid) {
+        firstInvalid.focus();
+        return;
+      }
+
+      // Validación superada. No hay backend: se limpia y se confirma.
+      form.reset();
+      Object.keys(fields).forEach((key) => showError(key, ""));
+      success.classList.remove("hidden");
+      success.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+  }
+
+  /* ===============================================================
+     6. UTILIDADES
+     =============================================================== */
+  function initMisc() {
+    const yearEl = document.getElementById("year");
+    if (yearEl) yearEl.textContent = String(new Date().getFullYear());
+  }
+
+  /* ===============================================================
+     ARRANQUE
+     =============================================================== */
+  document.addEventListener("DOMContentLoaded", () => {
+    mountProjects();          // 1. pinta las tarjetas antes de observarlas
+    initMobileMenu();         // 2
+    initNavbarBehavior();     // 3
+    initScrollAnimations();   // 4 (después de mountProjects)
+    initContactForm();        // 5
+    initMisc();               // 6
+  });
+})();
