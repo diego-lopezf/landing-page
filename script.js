@@ -25,7 +25,7 @@
         "Mantiene sincronizados los contactos y estados de venta entre un CRM y Google Sheets en tiempo casi real, eliminando la copia manual de datos.",
       tech: ["Python", "REST API", "Google Sheets API", "OAuth2"],
       icon: "sync",
-      code: "https://github.com/diego-lopezf",
+      code: "https://github.com/diego-lopezf/crm-sheets-sync",
       demo: "#",
     },
     {
