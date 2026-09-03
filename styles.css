@@ -176,3 +176,8 @@ body {
 .nav-link.active {
   color: #ffffff;
 }
+
+/* Nombre de marca en el navbar: blanco puro */
+.brand-name {
+  color: #ffffff;
+}
