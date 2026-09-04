@@ -17,10 +17,30 @@
      Fuente de datos única. Para añadir un proyecto basta con
      agregar un objeto a este array.
      =============================================================== */
+  /*
+   * status: "built"   → proyecto real, con código y/o demo. Muestra sus botones.
+   * status: "concept" → idea de servicio aún NO implementada. Sin "Ver Código";
+   *                     el botón de acción queda deshabilitado ("Disponible bajo pedido").
+   * code:    URL del repo, o null si es privado / no existe.
+   * demo:    URL de la demo (para "built" con enlace externo).
+   * details: clave de PROJECT_DETAILS → abre el modal "Detalles" en vez de un enlace.
+   */
   const PROJECTS = [
+    {
+      title: "Sincronizador Virtuagym ↔ Google Sheets",
+      category: "API Integration",
+      status: "built",
+      description:
+        "Sistema de automatización para un estudio de baile: sincroniza reservas de clases y pagos desde Virtuagym a Google Sheets cada 2 horas, sin intervención manual. Incluye deduplicación automática y scheduling en la nube.",
+      tech: ["Python", "Virtuagym API", "Google Sheets API", "GitHub Actions"],
+      icon: "clock",
+      code: null, // repositorio privado
+      details: "virtuagym",
+    },
     {
       title: "Sincronizador CRM ↔ Hojas de cálculo",
       category: "API Integration",
+      status: "built",
       description:
         "Mantiene sincronizados los contactos y estados de venta entre un CRM y Google Sheets en tiempo casi real, eliminando la copia manual de datos.",
       tech: ["Python", "REST API", "Google Sheets API", "OAuth2"],
@@ -31,52 +51,47 @@
     {
       title: "Bot de reportes automáticos",
       category: "Bot",
+      status: "concept",
       description:
         "Genera y envía informes diarios de métricas a un canal de equipo, con gráficos y alertas cuando un KPI sale de rango.",
       tech: ["Python", "Telegram API", "Pandas", "Matplotlib"],
       icon: "bot",
-      code: "https://github.com/diego-lopezf",
-      demo: "#",
     },
     {
       title: "Extractor de precios de la competencia",
       category: "Web Scraping",
+      status: "concept",
       description:
         "Rastrea catálogos de varias tiendas, normaliza los datos y detecta variaciones de precio para tomar decisiones comerciales.",
       tech: ["Python", "Playwright", "BeautifulSoup", "SQLite"],
       icon: "scrape",
-      code: "https://github.com/diego-lopezf",
-      demo: "#",
     },
     {
       title: "Pipeline de gestión de facturas",
       category: "Python",
+      status: "concept",
       description:
         "Lee facturas en PDF desde el correo, extrae los campos clave con OCR y los vuelca a un sistema contable de forma estructurada.",
       tech: ["Python", "IMAP", "Tesseract OCR", "Regex"],
       icon: "invoice",
-      code: "https://github.com/diego-lopezf",
-      demo: "#",
     },
     {
       title: "Integrador de reservas multicanal",
       category: "API Integration",
+      status: "concept",
       description:
         "Unifica reservas procedentes de distintas plataformas en un único calendario y evita solapamientos (overbooking).",
       tech: ["Python", "FastAPI", "Webhooks", "PostgreSQL"],
       icon: "calendar",
-      code: "https://github.com/diego-lopezf",
-      demo: "#",
     },
     {
       title: "Vigilante de despliegues",
       category: "Bot",
+      status: "concept",
       description:
         "Supervisa el estado de los servicios tras cada despliegue y realiza rollback automático si los health checks fallan.",
       tech: ["Python", "Docker SDK", "Slack API", "Cron"],
       icon: "shield",
-      code: "https://github.com/diego-lopezf",
-      demo: "#",
     },
   ];
 
@@ -88,6 +103,43 @@
     invoice: '<path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />',
     calendar: '<path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />',
     shield: '<path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />',
+    clock: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />',
+  };
+
+  /* ===============================================================
+     1b. DETALLES DE PROYECTO (modal)
+     Contenido para proyectos reales sin repositorio público.
+     Describe solo el flujo técnico — sin datos reales de clientes.
+     =============================================================== */
+  const PROJECT_DETAILS = {
+    virtuagym: `
+      <span class="badge badge--live mb-4 inline-flex">API Integration · En producción</span>
+      <h3 class="text-xl font-bold text-white">Sincronizador Virtuagym ↔ Google Sheets</h3>
+      <p class="mt-3 text-sm leading-relaxed text-slate-300">
+        Automatización a medida para un estudio de baile que gestiona clases y pagos
+        en Virtuagym. El personal volcaba esos datos a mano en una hoja de cálculo
+        para control interno y contabilidad: tarea repetitiva y con errores frecuentes.
+      </p>
+
+      <h4 class="mt-6 text-xs font-semibold uppercase tracking-wider text-slate-400">El flujo</h4>
+      <ol class="mt-3 space-y-2 text-sm leading-relaxed text-slate-300">
+        <li><strong class="text-white">1. Extracción.</strong> Cada 2 horas, un job programado en GitHub Actions consulta la API de Virtuagym y recupera las reservas de clases y los pagos registrados.</li>
+        <li><strong class="text-white">2. Deduplicación.</strong> Cada registro se compara con lo ya sincronizado por su identificador único; lo que ya existe se descarta para no duplicar filas.</li>
+        <li><strong class="text-white">3. Normalización.</strong> Se unifican formatos de fecha, importes y nombres de clase.</li>
+        <li><strong class="text-white">4. Carga.</strong> Solo las filas nuevas se añaden a Google Sheets mediante su API oficial, en pestañas separadas para reservas y pagos.</li>
+        <li><strong class="text-white">5. Registro.</strong> Cada ejecución deja traza (filas nuevas, incidencias) en el log de la Action.</li>
+      </ol>
+
+      <h4 class="mt-6 text-xs font-semibold uppercase tracking-wider text-slate-400">Stack</h4>
+      <p class="mt-2 text-sm text-slate-300">Python · Virtuagym API · Google Sheets API · GitHub Actions (cron)</p>
+
+      <h4 class="mt-6 text-xs font-semibold uppercase tracking-wider text-slate-400">Estado</h4>
+      <p class="mt-2 text-sm text-slate-300">En producción, funcionando de forma autónoma. El repositorio es privado.</p>
+
+      <p class="mt-6 rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-xs text-slate-400">
+        Este resumen describe únicamente el flujo técnico. No se muestran datos reales de clientes.
+      </p>
+    `,
   };
 
   /**
@@ -95,12 +147,49 @@
    * @param {object} p - datos del proyecto
    * @returns {string} markup de la tarjeta
    */
+  const GITHUB_ICON = `<svg class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 .5C5.37.5 0 5.78 0 12.29c0 5.2 3.44 9.6 8.2 11.16.6.11.82-.25.82-.56v-2c-3.34.71-4.04-1.58-4.04-1.58-.55-1.36-1.33-1.73-1.33-1.73-1.09-.73.08-.72.08-.72 1.2.08 1.83 1.21 1.83 1.21 1.07 1.8 2.8 1.28 3.49.98.11-.76.42-1.28.76-1.58-2.67-.3-5.47-1.31-5.47-5.83 0-1.29.47-2.34 1.24-3.17-.13-.3-.54-1.52.11-3.18 0 0 1.01-.32 3.3 1.21a11.6 11.6 0 016 0c2.29-1.53 3.3-1.21 3.3-1.21.65 1.66.24 2.88.12 3.18.77.83 1.23 1.88 1.23 3.17 0 4.53-2.8 5.53-5.48 5.82.43.36.81 1.09.81 2.2v3.26c0 .31.22.68.83.56A12.03 12.03 0 0024 12.29C24 5.78 18.63.5 12 .5z" />
+              </svg>`;
+  const ARROW_ICON = `<svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>`;
+
+  const BTN_SECONDARY =
+    "inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-slate-200 transition-colors hover:border-white/25 hover:bg-white/10";
+  const BTN_PRIMARY =
+    "inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-accent to-accent-2 px-3 py-1.5 text-xs font-semibold text-white transition-transform hover:-translate-y-0.5";
+  const BTN_DISABLED =
+    "inline-flex cursor-not-allowed items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-slate-500";
+
+  /** Botones de una tarjeta según su estado. */
+  function renderProjectActions(p) {
+    // Concepto: sin código, acción deshabilitada.
+    if (p.status === "concept") {
+      return `<button type="button" disabled class="${BTN_DISABLED}">Disponible bajo pedido</button>`;
+    }
+
+    // "Ver Código" solo si hay repositorio público.
+    const codeBtn = p.code
+      ? `<a href="${p.code}" target="_blank" rel="noopener noreferrer" class="${BTN_SECONDARY}">${GITHUB_ICON}Ver Código</a>`
+      : "";
+
+    // Acción principal: modal "Detalles" o enlace externo "Demo / Detalles".
+    const mainBtn = p.details
+      ? `<button type="button" data-details="${p.details}" class="${BTN_PRIMARY}">Detalles ${ARROW_ICON}</button>`
+      : `<a href="${p.demo}" class="${BTN_PRIMARY}">Demo / Detalles ${ARROW_ICON}</a>`;
+
+    return codeBtn + mainBtn;
+  }
+
   function renderProjectCard(p) {
     const chips = p.tech.map((t) => `<span class="tech-chip">${t}</span>`).join("");
     const iconPath = ICONS[p.icon] || ICONS.sync;
+    const isConcept = p.status === "concept";
+    const badgeClass = isConcept ? "badge badge--concept" : "badge";
+    const badgeText = isConcept ? `${p.category} · Concepto` : p.category;
 
     return `
-      <article class="project-card flex flex-col" data-animate>
+      <article class="project-card flex flex-col${isConcept ? " project-card--concept" : ""}" data-animate>
         <!-- Preview / captura visual -->
         <div class="project-preview flex h-40 items-center justify-center border-b border-white/5">
           <svg class="project-preview-icon h-14 w-14 text-white/80" fill="none" viewBox="0 0 24 24"
@@ -110,7 +199,7 @@
         </div>
 
         <div class="flex flex-1 flex-col p-5">
-          <span class="badge mb-3 self-start">${p.category}</span>
+          <span class="${badgeClass} mb-3 self-start">${badgeText}</span>
 
           <h3 class="text-base font-bold text-white">${p.title}</h3>
           <p class="mt-2 flex-1 text-sm leading-relaxed text-slate-400">${p.description}</p>
@@ -119,22 +208,7 @@
           <div class="mt-4 flex flex-wrap gap-1.5">${chips}</div>
 
           <!-- Acciones -->
-          <div class="mt-5 flex gap-3">
-            <a href="${p.code}" target="_blank" rel="noopener noreferrer"
-               class="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-slate-200 transition-colors hover:border-white/25 hover:bg-white/10">
-              <svg class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M12 .5C5.37.5 0 5.78 0 12.29c0 5.2 3.44 9.6 8.2 11.16.6.11.82-.25.82-.56v-2c-3.34.71-4.04-1.58-4.04-1.58-.55-1.36-1.33-1.73-1.33-1.73-1.09-.73.08-.72.08-.72 1.2.08 1.83 1.21 1.83 1.21 1.07 1.8 2.8 1.28 3.49.98.11-.76.42-1.28.76-1.58-2.67-.3-5.47-1.31-5.47-5.83 0-1.29.47-2.34 1.24-3.17-.13-.3-.54-1.52.11-3.18 0 0 1.01-.32 3.3 1.21a11.6 11.6 0 016 0c2.29-1.53 3.3-1.21 3.3-1.21.65 1.66.24 2.88.12 3.18.77.83 1.23 1.88 1.23 3.17 0 4.53-2.8 5.53-5.48 5.82.43.36.81 1.09.81 2.2v3.26c0 .31.22.68.83.56A12.03 12.03 0 0024 12.29C24 5.78 18.63.5 12 .5z" />
-              </svg>
-              Ver Código
-            </a>
-            <a href="${p.demo}"
-               class="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-accent to-accent-2 px-3 py-1.5 text-xs font-semibold text-white transition-transform hover:-translate-y-0.5">
-              Demo / Detalles
-              <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-              </svg>
-            </a>
-          </div>
+          <div class="mt-5 flex flex-wrap gap-3">${renderProjectActions(p)}</div>
         </div>
       </article>`;
   }
@@ -144,6 +218,41 @@
     const grid = document.getElementById("projects-grid");
     if (!grid) return;
     grid.innerHTML = PROJECTS.map(renderProjectCard).join("");
+  }
+
+  /** Modal "Detalles" para proyectos reales sin repositorio público. */
+  function initProjectModal() {
+    const modal = document.getElementById("project-modal");
+    const grid = document.getElementById("projects-grid");
+    if (!modal || !grid) return;
+
+    const contentEl = modal.querySelector("#project-modal-content");
+    const closeBtn = modal.querySelector("[data-modal-close]");
+
+    const open = (key) => {
+      const html = PROJECT_DETAILS[key];
+      if (!html) return;
+      contentEl.innerHTML = html;
+      if (typeof modal.showModal === "function") modal.showModal();
+      else modal.setAttribute("open", "");
+    };
+    const close = () => {
+      if (typeof modal.close === "function") modal.close();
+      else modal.removeAttribute("open");
+    };
+
+    grid.addEventListener("click", (e) => {
+      const trigger = e.target.closest("[data-details]");
+      if (!trigger) return;
+      e.preventDefault();
+      open(trigger.dataset.details);
+    });
+
+    closeBtn.addEventListener("click", close);
+    // Clic en el fondo oscuro (fuera del contenido) cierra el modal.
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) close();
+    });
   }
 
   /* ===============================================================
@@ -327,6 +436,7 @@
      =============================================================== */
   document.addEventListener("DOMContentLoaded", () => {
     mountProjects();          // 1. pinta las tarjetas antes de observarlas
+    initProjectModal();       // 1b. modal "Detalles"
     initMobileMenu();         // 2
     initNavbarBehavior();     // 3
     initScrollAnimations();   // 4 (después de mountProjects)

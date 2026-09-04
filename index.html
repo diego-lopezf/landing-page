@@ -44,7 +44,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
   <!-- Estilos propios -->
-  <link rel="stylesheet" href="styles.css?v=2" />
+  <link rel="stylesheet" href="styles.css?v=4" />
 </head>
 
 <body class="bg-base text-slate-200 font-sans antialiased selection:bg-accent-2/40">
@@ -242,7 +242,10 @@
         <div class="mt-3 h-1 w-16 rounded-full bg-gradient-to-r from-accent to-accent-2"></div>
         <p class="mt-4 max-w-2xl text-slate-400">
           Programas que eliminan tareas manuales, sincronizan datos entre plataformas
-          y mantienen procesos funcionando sin intervención humana.
+          y mantienen procesos funcionando sin intervención humana. Las tarjetas
+          <strong class="text-slate-200">en producción</strong> tienen código y demo reales;
+          las marcadas como <strong class="text-slate-200">«Concepto»</strong> son servicios
+          que ofrezco pero aún no he implementado.
         </p>
       </div>
 
@@ -347,6 +350,20 @@
     </div>
   </footer>
 
-  <script src="script.js?v=3"></script>
+  <!-- ============================================================= -->
+  <!-- MODAL — detalles de proyecto (se rellena desde script.js)      -->
+  <!-- ============================================================= -->
+  <dialog id="project-modal" class="project-modal">
+    <div class="project-modal__inner">
+      <button type="button" data-modal-close aria-label="Cerrar" class="project-modal__close">
+        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+      <div id="project-modal-content"></div>
+    </div>
+  </dialog>
+
+  <script src="script.js?v=4"></script>
 </body>
 </html>
