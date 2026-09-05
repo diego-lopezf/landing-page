@@ -5,7 +5,7 @@
    2. Menú móvil
    3. Navbar: sombra al hacer scroll + enlace activo
    4. Animaciones de entrada (IntersectionObserver)
-   5. Validación del formulario de contacto
+   5. Formulario de contacto: validación + envío (Web3Forms)
    6. Utilidades (año del footer)
    ================================================================= */
 
@@ -344,13 +344,30 @@
   }
 
   /* ===============================================================
-     5. VALIDACIÓN DEL FORMULARIO DE CONTACTO
+     5. FORMULARIO DE CONTACTO — validación + envío
+     ===============================================================
+     El sitio es estático (sin servidor propio): el envío se delega en
+     Web3Forms (https://web3forms.com). La "access key" es pública por
+     diseño (viaja en el cliente) y solo permite entregar en el correo
+     dado de alta para ese formulario.
+
+     Si WEB3FORMS_ACCESS_KEY queda vacía, el formulario cae de forma
+     elegante a abrir el cliente de correo del visitante (mailto), para
+     que ningún mensaje se pierda.
      =============================================================== */
+  // Access key de Web3Forms (https://web3forms.com): esta línea es el único
+  // sitio donde se configura. Vacía → se usa el fallback mailto.
+  const WEB3FORMS_ACCESS_KEY = "b49b4b02-43b2-46bf-ab35-b13e420d4234";
+  const WEB3FORMS_ENDPOINT = "https://api.web3forms.com/submit";
+  const CONTACT_EMAIL = "lopezfreirediego@icloud.com";
+  const CONTACT_PHONE = "+34 698 947 408";
+
   function initContactForm() {
     const form = document.getElementById("contact-form");
     if (!form) return;
 
-    const success = document.getElementById("form-success");
+    const statusEl = document.getElementById("form-status");
+    const submitBtn = document.getElementById("contact-submit");
     const fields = {
       name: form.querySelector("#name"),
       email: form.querySelector("#email"),
@@ -389,6 +406,32 @@
       if (errorEl) errorEl.textContent = msg;
     };
 
+    /** Muestra el aviso de resultado (ok = verde, error = rojo). */
+    const setStatus = (msg, ok) => {
+      statusEl.textContent = msg;
+      statusEl.className =
+        "rounded-lg border px-4 py-3 text-sm " +
+        (ok
+          ? "border-green-500/30 bg-green-500/10 text-green-300"
+          : "border-red-500/30 bg-red-500/10 text-red-300");
+      statusEl.scrollIntoView({ behavior: "smooth", block: "center" });
+    };
+    const clearStatus = () => {
+      statusEl.textContent = "";
+      statusEl.className = "hidden";
+    };
+
+    /** Alternativa sin backend: abre el cliente de correo con todo escrito. */
+    const mailtoFallback = () => {
+      const subject = encodeURIComponent("Nuevo mensaje desde la landing");
+      const body = encodeURIComponent(
+        `Nombre: ${fields.name.value.trim()}\n` +
+          `Email: ${fields.email.value.trim()}\n\n` +
+          `${fields.message.value.trim()}\n`
+      );
+      window.location.href = `mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}`;
+    };
+
     // Validación en vivo una vez que el campo pierde el foco
     Object.keys(fields).forEach((key) => {
       fields[key].addEventListener("blur", () => showError(key, validateField(key)));
@@ -399,27 +442,84 @@
       });
     });
 
-    form.addEventListener("submit", (e) => {
-      e.preventDefault();
-      success.classList.add("hidden");
+    let sending = false;
 
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (sending) return;
+      clearStatus();
+
+      // Honeypot: si el campo trampa está marcado, es un bot. Fingimos éxito.
+      const honeypot = form.elements.botcheck;
+      if (honeypot && honeypot.checked) {
+        setStatus("✓ Mensaje enviado. Te respondo lo antes posible.", true);
+        form.reset();
+        return;
+      }
+
+      // Validación de todos los campos
       let firstInvalid = null;
       Object.keys(fields).forEach((key) => {
         const msg = validateField(key);
         showError(key, msg);
         if (msg && !firstInvalid) firstInvalid = fields[key];
       });
-
       if (firstInvalid) {
         firstInvalid.focus();
         return;
       }
 
-      // Validación superada. No hay backend: se limpia y se confirma.
-      form.reset();
-      Object.keys(fields).forEach((key) => showError(key, ""));
-      success.classList.remove("hidden");
-      success.scrollIntoView({ behavior: "smooth", block: "center" });
+      // Sin clave configurada → alternativa por correo, para no perder el mensaje.
+      if (!WEB3FORMS_ACCESS_KEY) {
+        console.warn(
+          "[contacto] WEB3FORMS_ACCESS_KEY sin configurar. Se abre el cliente de correo como alternativa."
+        );
+        setStatus(
+          `Se abrirá tu cliente de correo para completar el envío. Si no ocurre nada, escríbeme a ${CONTACT_EMAIL} o al ${CONTACT_PHONE}.`,
+          true
+        );
+        mailtoFallback();
+        return;
+      }
+
+      // Envío real vía Web3Forms
+      sending = true;
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Enviando…";
+
+      try {
+        const res = await fetch(WEB3FORMS_ENDPOINT, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify({
+            access_key: WEB3FORMS_ACCESS_KEY,
+            subject: "Nuevo mensaje desde la landing",
+            from_name: fields.name.value.trim(),
+            name: fields.name.value.trim(),
+            email: fields.email.value.trim(),
+            message: fields.message.value.trim(),
+          }),
+        });
+        const data = await res.json().catch(() => ({}));
+
+        if (res.ok && data.success) {
+          form.reset();
+          Object.keys(fields).forEach((key) => showError(key, ""));
+          setStatus("✓ Mensaje enviado. Te respondo lo antes posible.", true);
+        } else {
+          throw new Error(data.message || `HTTP ${res.status}`);
+        }
+      } catch (err) {
+        console.error("[contacto] Error al enviar el formulario:", err);
+        setStatus(
+          `No se pudo enviar el mensaje. Escríbeme directamente a ${CONTACT_EMAIL} o llámame al ${CONTACT_PHONE}.`,
+          false
+        );
+      } finally {
+        sending = false;
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Enviar mensaje";
+      }
     });
   }
 
