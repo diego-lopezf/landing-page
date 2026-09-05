@@ -256,6 +256,82 @@
   }
 
   /* ===============================================================
+     1c. CARRUSEL DE TESTIMONIOS
+     Navegación manual (flechas + puntos + teclado). Sin autoplay.
+     El marcado es estático en index.html; aquí solo se cablea la
+     navegación. Con menos de 2 testimonios no hay nada que rotar:
+     se deja como cita destacada y los controles siguen ocultos.
+     =============================================================== */
+  function initTestimonialCarousel() {
+    const root = document.querySelector("[data-testimonial-carousel]");
+    if (!root) return;
+
+    const track = root.querySelector(".testimonials__track");
+    const slides = Array.from(root.querySelectorAll(".testimonial-slide"));
+    const controls = root.querySelector("[data-carousel-controls]");
+    const dotsWrap = root.querySelector("[data-carousel-dots]");
+    const prevBtn = root.querySelector("[data-carousel-prev]");
+    const nextBtn = root.querySelector("[data-carousel-next]");
+    const statusEl = root.querySelector("[data-carousel-status]");
+    if (!track || slides.length === 0) return;
+
+    if (slides.length < 2) {
+      slides[0].setAttribute("aria-label", "1 de 1");
+      return;
+    }
+
+    let index = 0;
+
+    // Un punto por testimonio
+    const dots = slides.map((_, i) => {
+      const dot = document.createElement("button");
+      dot.type = "button";
+      dot.className = "testimonials__dot";
+      dot.setAttribute("role", "tab");
+      dot.setAttribute("aria-label", `Ir al testimonio ${i + 1}`);
+      dot.addEventListener("click", () => goTo(i));
+      dotsWrap.appendChild(dot);
+      return dot;
+    });
+
+    function goTo(next) {
+      index = (next + slides.length) % slides.length;
+      track.style.transform = `translateX(-${index * 100}%)`;
+
+      slides.forEach((slide, i) => {
+        const current = i === index;
+        slide.setAttribute("aria-hidden", String(!current));
+        slide.setAttribute("aria-label", `${i + 1} de ${slides.length}`);
+        // El contenido oculto no debe ser alcanzable con el tabulador
+        slide.querySelectorAll("a, button").forEach((el) => {
+          el.tabIndex = current ? 0 : -1;
+        });
+      });
+      dots.forEach((dot, i) =>
+        dot.setAttribute("aria-selected", String(i === index))
+      );
+      statusEl.textContent = `Testimonio ${index + 1} de ${slides.length}`;
+    }
+
+    prevBtn.addEventListener("click", () => goTo(index - 1));
+    nextBtn.addEventListener("click", () => goTo(index + 1));
+
+    // Flechas del teclado cuando el foco está dentro del carrusel
+    root.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        goTo(index - 1);
+      } else if (e.key === "ArrowRight") {
+        e.preventDefault();
+        goTo(index + 1);
+      }
+    });
+
+    controls.hidden = false;
+    goTo(0);
+  }
+
+  /* ===============================================================
      2. MENÚ MÓVIL
      =============================================================== */
   function initMobileMenu() {
@@ -535,9 +611,10 @@
      ARRANQUE
      =============================================================== */
   document.addEventListener("DOMContentLoaded", () => {
-    mountProjects();          // 1. pinta las tarjetas antes de observarlas
-    initProjectModal();       // 1b. modal "Detalles"
-    initMobileMenu();         // 2
+    mountProjects();            // 1. pinta las tarjetas antes de observarlas
+    initProjectModal();         // 1b. modal "Detalles"
+    initTestimonialCarousel();  // 1c. carrusel de testimonios
+    initMobileMenu();           // 2
     initNavbarBehavior();     // 3
     initScrollAnimations();   // 4 (después de mountProjects)
     initContactForm();        // 5

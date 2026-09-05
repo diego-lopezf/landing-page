@@ -44,7 +44,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
   <!-- Estilos propios -->
-  <link rel="stylesheet" href="styles.css?v=4" />
+  <link rel="stylesheet" href="styles.css?v=5" />
 </head>
 
 <body class="bg-base text-slate-200 font-sans antialiased selection:bg-accent-2/40">
@@ -69,6 +69,7 @@
       <ul class="hidden items-center gap-8 text-sm font-medium text-slate-300 md:flex">
         <li><a href="#sobre-mi" class="nav-link transition-colors hover:text-white">Sobre mí</a></li>
         <li><a href="#proyectos" class="nav-link transition-colors hover:text-white">Proyectos</a></li>
+        <li><a href="#testimonios" class="nav-link transition-colors hover:text-white">Testimonios</a></li>
         <li><a href="#contacto" class="nav-link transition-colors hover:text-white">Contacto</a></li>
       </ul>
 
@@ -89,6 +90,7 @@
       <ul class="flex flex-col gap-1 px-6 py-4 text-sm font-medium">
         <li><a href="#sobre-mi" class="mobile-link block rounded-lg px-3 py-2 hover:bg-white/5">Sobre mí</a></li>
         <li><a href="#proyectos" class="mobile-link block rounded-lg px-3 py-2 hover:bg-white/5">Proyectos</a></li>
+        <li><a href="#testimonios" class="mobile-link block rounded-lg px-3 py-2 hover:bg-white/5">Testimonios</a></li>
         <li><a href="#contacto" class="mobile-link block rounded-lg px-3 py-2 hover:bg-white/5">Contacto</a></li>
       </ul>
     </div>
@@ -254,6 +256,79 @@
     </section>
 
     <!-- ============================================================= -->
+    <!-- TESTIMONIOS — negocios locales                                 -->
+    <!-- Carrusel de navegación manual (sin autoplay). El marcado es    -->
+    <!-- estático: cada testimonio es un <li> que se edita a mano.      -->
+    <!-- La lógica de flechas/puntos vive en script.js                  -->
+    <!-- (initTestimonialCarousel). Con un solo testimonio, los         -->
+    <!-- controles quedan ocultos y se muestra como cita destacada.     -->
+    <!-- ============================================================= -->
+    <section id="testimonios" class="mx-auto max-w-6xl px-6 py-24">
+      <div data-animate class="mb-12">
+        <h2 class="section-title">Negocios que confían en mi trabajo</h2>
+        <div class="mt-3 h-1 w-16 rounded-full bg-gradient-to-r from-accent to-accent-2"></div>
+        <p class="mt-4 max-w-2xl text-slate-400">
+          Sección en construcción: la voy ampliando a medida que completo proyectos
+          con negocios locales. Cada testimonio corresponde a un trabajo real y se
+          publica con permiso del cliente.
+        </p>
+      </div>
+
+      <div data-animate>
+        <div class="testimonials" data-testimonial-carousel role="region"
+             aria-roledescription="carrusel" aria-label="Testimonios de clientes">
+          <div class="testimonials__viewport">
+            <ul class="testimonials__track">
+              <!-- ---------- Testimonio real: The Vibe Studio ---------- -->
+              <li class="testimonial-slide" role="group" aria-roledescription="testimonio" aria-label="1 de 1">
+                <figure class="testimonial-card">
+                  <span class="testimonial-card__quote" aria-hidden="true">&ldquo;</span>
+                  <blockquote class="testimonial-card__text">
+                    Nos automatizó toda la gestión de pagos desde Virtuagym hacia
+                    Google Sheets en tiempo real. Lo que antes nos llevaba horas de
+                    control manual ahora se sincroniza solo y sin errores. Un cambio
+                    brutal en la operativa diaria del estudio.
+                  </blockquote>
+                  <figcaption class="testimonial-card__author">
+                    <span class="testimonial-card__avatar" aria-hidden="true">TV</span>
+                    <span class="testimonial-card__identity">
+                      <span class="testimonial-card__name">Dirección — The Vibe Studio</span>
+                      <span class="testimonial-card__meta">Estudio de baile · A Coruña</span>
+                    </span>
+                    <a href="#proyectos" class="badge badge--live testimonial-card__project">Ver el proyecto</a>
+                  </figcaption>
+                </figure>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Controles: script.js los muestra solo si hay 2+ testimonios -->
+          <div class="testimonials__controls" data-carousel-controls hidden>
+            <button type="button" class="testimonials__arrow" data-carousel-prev aria-label="Testimonio anterior">
+              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <div class="testimonials__dots" data-carousel-dots role="tablist" aria-label="Seleccionar testimonio"></div>
+            <button type="button" class="testimonials__arrow" data-carousel-next aria-label="Testimonio siguiente">
+              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+
+          <!-- Anuncio para lectores de pantalla al cambiar de testimonio -->
+          <p class="sr-only" aria-live="polite" data-carousel-status></p>
+        </div>
+
+        <p class="testimonials__cta">
+          ¿Hemos trabajado juntos?
+          <a href="#contacto">Cuéntame tu experiencia&nbsp;&rarr;</a>
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
     <!-- CONTACTO                                                       -->
     <!-- ============================================================= -->
     <section id="contacto" class="mx-auto max-w-6xl px-6 py-24">
@@ -381,6 +456,6 @@
     </div>
   </dialog>
 
-  <script src="script.js?v=5"></script>
+  <script src="script.js?v=6"></script>
 </body>
 </html>
